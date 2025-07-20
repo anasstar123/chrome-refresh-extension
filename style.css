@@ -1,72 +1,44 @@
 body {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  background: #a8a7a7;
-  padding: 20px;
-  margin: 20px;
-  width: 300px;
-}
-
-#first-child {
-  background: #020024;
-  background: linear-gradient(90deg,rgba(2, 0, 36, 1) 0%, rgba(9, 9, 121, 1) 35%, rgba(0, 212, 255, 1) 100%);
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  padding: 20px;
-}
-
-label {
-  font-weight: 600;
-  margin-bottom: 8px;
-  display: inline-block;
-  color: #ffffff;
-}
-
-
-select, input[type="text"] {
-  width: 50%;
-  padding: 10px;
-  margin: 10px 0 20px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  transition: border-color 0.3s ease;
-  font-size: 14px;
-}
-
-input[type="text"] {
-  width: 250px;
-}
-
-select:focus, input:focus {
-  border-color: #9deabe;
-  outline: none;
-}
-
-button {
-  width: 100%;
-  padding: 12px;
-  margin: 5px 0;
-  background-color: #1da1f2;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-button:hover {
-  background-color: #1687cd;
-}
-
-#stop-btn {
-  background-color: #ff4d4d;
-}
-
-#stop-btn:hover {
-  background-color: #e03e3e;
-}
-
-#advanced-btn:hover {
-    
-    background: linear-gradient(50deg, #fcff9e 0%, #c67700 100%)
-}
+      background: linear-gradient(135deg, #0052D4, #4364F7, #6FB1FC);
+      font-family: system-ui, sans-serif;
+      color: white;
+      padding: 20px;
+      min-width: 220px;
+    }
+    label, select, button {
+      display: block;
+      width: 100%;
+      margin-top: 12px;
+      font-size: 16px;
+    }
+    select {
+      padding: 8px;
+      border-radius: 4px;
+      border: none;
+      font-size: 16px;
+    }
+    button {
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      background-color: #4a90e2;
+      color: white;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #357ABD;
+    }
+    #stop-btn {
+      background-color: #e94e4e;
+      margin-top: 20px;
+    }
+    #stop-btn:hover {
+      background-color: #b72e2e;
+    }
+    #countdown-display {
+      margin-top: 15px;
+      font-size: 18px;
+      font-weight: bold;
+      text-align: center;
+    }
