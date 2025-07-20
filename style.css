@@ -1,44 +1,91 @@
 body {
-      background: linear-gradient(135deg, #0052D4, #4364F7, #6FB1FC);
-      font-family: system-ui, sans-serif;
-      color: white;
-      padding: 20px;
-      min-width: 220px;
-    }
-    label, select, button {
-      display: block;
-      width: 100%;
-      margin-top: 12px;
-      font-size: 16px;
-    }
-    select {
-      padding: 8px;
-      border-radius: 4px;
-      border: none;
-      font-size: 16px;
-    }
-    button {
-      padding: 10px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      background-color: #4a90e2;
-      color: white;
-      transition: background-color 0.3s;
-    }
-    button:hover {
-      background-color: #357ABD;
-    }
-    #stop-btn {
-      background-color: #e94e4e;
-      margin-top: 20px;
-    }
-    #stop-btn:hover {
-      background-color: #b72e2e;
-    }
-    #countdown-display {
-      margin-top: 15px;
-      font-size: 18px;
-      font-weight: bold;
-      text-align: center;
-    }
+  background: linear-gradient(135deg, #1e3c72, #2a5298);
+  font-family: "Segoe UI", Roboto, sans-serif;
+  color: #f1f1f1;
+  padding: 25px;
+  min-width: 250px;
+  box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.1);
+}
+
+.checkbox-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.checkbox-group input[type="checkbox"] {
+  transform: scale(1.2);
+  accent-color: #4a90e2;
+  cursor: pointer;
+}
+
+.checkbox-group label {
+  margin: 0;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+
+label, select, button {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  font-size: 16px;
+}
+
+select, button {
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+select {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  backdrop-filter: blur(6px);
+}
+
+select:focus {
+  outline: none;
+  border: 2px solid #6FB1FC;
+}
+
+select option {
+  color: black;
+}
+
+button {
+  background: linear-gradient(145deg, #4a90e2, #357ABD);
+  color: #fff;
+  font-weight: bold;
+}
+
+button:hover {
+  background: linear-gradient(145deg, #3b7dd8, #2867b4);
+  transform: scale(1.02);
+}
+
+#stop-btn {
+  background: linear-gradient(145deg, #e94e4e, #c13535);
+  margin-top: 20px;
+}
+
+#stop-btn:hover {
+  background: linear-gradient(145deg, #c73535, #9f2626);
+}
+
+#countdown-display {
+  margin-top: 20px;
+  font-size: 14px;
+  font-weight: bold;
+  text-align: center;
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 12px;
+  border-radius: 6px;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}

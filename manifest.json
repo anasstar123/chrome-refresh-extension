@@ -2,8 +2,8 @@
   "manifest_version": 3,
   "name": "Auto Refresh Extension",
   "version": "1.0",
-  "description": "Auto-refresh pages per tab with countdown.",
-  "permissions": ["storage", "tabs"],
+  "description": "A simple extension to auto-refresh web pages.",
+  "permissions": ["tabs", "storage"],
   "host_permissions": ["<all_urls>"],
   "background": {
     "service_worker": "background.js"
