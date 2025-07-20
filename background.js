@@ -1,61 +1,74 @@
-let refreshIntervalId = null;
-let countdownIntervalId = null;
-let remainingSeconds = 0;
-let popupPort = null;
+const tabRefreshState = {};
 
 chrome.runtime.onConnect.addListener((port) => {
   if (port.name === "popup-connection") {
-    popupPort = port;
-
-    port.onDisconnect.addListener(() => {
-      popupPort = null;
-    });
-
     port.onMessage.addListener((msg) => {
+      const tabId = msg.tabId;
+
       if (msg.command === "start") {
-        startAutoRefresh(msg.tabId, msg.interval);
+        startAutoRefresh(tabId, msg.interval, port);
       } else if (msg.command === "stop") {
-        stopAutoRefresh();
+        stopAutoRefresh(tabId);
       } else if (msg.command === "getStatus") {
+        const state = tabRefreshState[tabId];
         port.postMessage({
           command: "status",
-          running: refreshIntervalId !== null,
-          remainingSeconds,
+          running: !!state,
+          remainingSeconds: state ? state.remainingSeconds : 0,
         });
+      }
+    });
+
+    port.onDisconnect.addListener(() => {
+      // Cleanup port reference (but not the refresh timer)
+      for (const tabId in tabRefreshState) {
+        if (tabRefreshState[tabId].port === port) {
+          tabRefreshState[tabId].port = null;
+        }
       }
     });
   }
 });
 
-function startAutoRefresh(tabId, intervalSeconds) {
-  stopAutoRefresh();
-  remainingSeconds = intervalSeconds;
+function startAutoRefresh(tabId, intervalSeconds, port) {
+  stopAutoRefresh(tabId);
 
-  countdownIntervalId = setInterval(() => {
-    remainingSeconds--;
-    if (remainingSeconds < 0) remainingSeconds = intervalSeconds;
-    if (popupPort) {
-      popupPort.postMessage({ command: "countdown", remaining: remainingSeconds });
+  const state = {
+    remainingSeconds: intervalSeconds,
+    intervalValue: intervalSeconds,
+    port: port,
+  };
+
+  state.countdownId = setInterval(() => {
+    state.remainingSeconds--;
+    if (state.remainingSeconds < 0) state.remainingSeconds = state.intervalValue;
+
+    if (state.port) {
+      state.port.postMessage({
+        command: "countdown",
+        remaining: state.remainingSeconds,
+      });
     }
   }, 1000);
 
-  refreshIntervalId = setInterval(() => {
-    chrome.tabs.reload(tabId);
-    remainingSeconds = intervalSeconds;
+  state.intervalId = setInterval(() => {
+    chrome.tabs.reload(Number(tabId));
+    state.remainingSeconds = state.intervalValue;
   }, intervalSeconds * 1000);
+
+  tabRefreshState[tabId] = state;
 }
 
-function stopAutoRefresh() {
-  if (refreshIntervalId) {
-    clearInterval(refreshIntervalId);
-    refreshIntervalId = null;
+function stopAutoRefresh(tabId) {
+  const state = tabRefreshState[tabId];
+  if (!state) return;
+
+  clearInterval(state.countdownId);
+  clearInterval(state.intervalId);
+
+  if (state.port) {
+    state.port.postMessage({ command: "countdown", remaining: 0 });
   }
-  if (countdownIntervalId) {
-    clearInterval(countdownIntervalId);
-    countdownIntervalId = null;
-  }
-  remainingSeconds = 0;
-  if (popupPort) {
-    popupPort.postMessage({ command: "countdown", remaining: 0 });
-  }
+
+  delete tabRefreshState[tabId];
 }
