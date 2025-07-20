@@ -6,6 +6,24 @@ const countdownDisplay = document.getElementById("countdown-display");
 
 let port = null;
 let normalCountdownInterval = null;
+let currentTabId = null;
+
+function startLocalCountdown(seconds) {
+  clearInterval(normalCountdownInterval);
+  let remaining = seconds;
+  updateCountdown(remaining);
+
+  normalCountdownInterval = setInterval(() => {
+    remaining--;
+    if (remaining <= 0) {
+      clearInterval(normalCountdownInterval);
+      updateCountdown(0);
+    } else {
+      updateCountdown(remaining);
+    }
+  }, 1000);
+}
+
 
 function formatTime(seconds) {
   const m = Math.floor(seconds / 60);
@@ -14,35 +32,35 @@ function formatTime(seconds) {
 }
 
 function updateCountdown(seconds) {
-  if (seconds > 0) {
-    countdownDisplay.textContent = `Refreshing in: ${formatTime(seconds)}`;
-  } else {
-    countdownDisplay.textContent = "";
-  }
+  countdownDisplay.textContent = seconds > 0 ? `Refreshing in: ${formatTime(seconds)}` : "";
 }
 
-function connectPort() {
+function connectPort(tabId) {
   port = chrome.runtime.connect({ name: "popup-connection" });
+  currentTabId = tabId;
 
   port.onMessage.addListener((msg) => {
-    if (msg.command === "countdown") {
-      updateCountdown(msg.remaining);
-    } else if (msg.command === "status") {
-      if (msg.running) {
-        updateCountdown(msg.remainingSeconds);
-      } else {
-        updateCountdown(0);
-      }
+  if (msg.command === "countdown") {
+    updateCountdown(msg.remaining);
+  } else if (msg.command === "status") {
+    if (msg.running) {
+      // start local countdown UI based on background time
+      startLocalCountdown(msg.remainingSeconds);
+    } else {
+      updateCountdown(0);
     }
-  });
+  }
+});
 
-  port.postMessage({ command: "getStatus" });
+
+  port.postMessage({ command: "getStatus", tabId });
 }
 
 normalBtn.addEventListener("click", async () => {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  if (!tab) return alert("No active tab found!");
+  if (!tab) return;
 
+  currentTabId = tab.id;
   let remaining = parseInt(timeSelect.value);
   clearInterval(normalCountdownInterval);
   updateCountdown(remaining);
@@ -66,23 +84,26 @@ normalBtn.addEventListener("click", async () => {
 
 advancedBtn.addEventListener("click", async () => {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  if (!tab) return alert("No active tab found!");
+  if (!tab) return;
 
   const interval = parseInt(timeSelect.value);
   clearInterval(normalCountdownInterval);
-  updateCountdown(interval);
+  connectPort(tab.id);
 
   port.postMessage({ command: "start", tabId: tab.id, interval });
 });
 
 stopBtn.addEventListener("click", () => {
   clearInterval(normalCountdownInterval);
-  if (port) port.postMessage({ command: "stop" });
+  if (port && currentTabId !== null) {
+    port.postMessage({ command: "stop", tabId: currentTabId });
+  }
   updateCountdown(0);
 });
 
-window.addEventListener("load", () => {
-  connectPort();
+window.addEventListener("load", async () => {
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (tab) connectPort(tab.id);
 });
 
 window.addEventListener("unload", () => {
