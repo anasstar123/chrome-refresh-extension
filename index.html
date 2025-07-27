@@ -3,43 +3,39 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Auto Refresh</title>
+  <title>Auto Refresh</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <label for="refresh-timer">Select Refresh Time:</label>
+  <label for="refresh-timer">Select Refresh Time :</label>
   <select id="refresh-timer">
-    <option value="10">10 seconds</option>
-    <option value="60">1 minute</option>
-    <option value="300">5 minutes</option>
-    <option value="600">10 minutes</option>
-    <option value="900">15 minutes</option>
-    <option value="1500">25 minutes</option>
+    <option value="10">10 seconds</option>
+    <option value="60">1 minute</option>
+    <option value="300">5 minutes</option>
+    <option value="600">10 minutes</option>
+    <option value="900">15 minutes</option>
+    <option value="1500">25 minutes</option>
+    <option value="1800">30 minutes</option> <!-- +30 min -->
   </select>
 
-  <br />
-
-<div class="checkbox-group">
-  <input type="checkbox" id="limit-toggle" />
-  <label for="limit-toggle">Enable Auto-Stop</label>
-</div>
-
+  <div class="checkbox-group">
+    <input type="checkbox" id="limit-toggle" />
+    <label for="limit-toggle">Enable AutoStop</label>
+  </div>
 
   <select id="max-refreshes" disabled>
-    <option value="1">1 refresh</option>
-    <option value="2">2 refreshes</option>
-    <option value="3">3 refreshes</option>
-    <option value="4">4 refreshes</option>
-    <option value="5">5 refreshes</option>
+    <option value="1">1 refresh</option>
+    <option value="2">2 refreshes</option>
+    <option value="3">3 refreshes</option>
+    <option value="4">4 refreshes</option>
+    <option value="5">5 refreshes</option>
   </select>
 
-  <br />
+  <button id="normal-btn">Normal Refresh</button>
+  <button id="advanced-btn">Advanced Refresh</button>
+  <button id="stop-btn" title="Doubleclick to stop">Stop</button>
 
-  <button id="normal-btn">Normal Refresh</button>
-  <button id="advanced-btn">Advanced Refresh</button>
-  <button id="stop-btn">Stop</button>
-
-  <div id="countdown-display" style="margin-top: 10px;"></div>
+  <div id="countdown-display"></div>
 
   <script src="popup.js"></script>
 </body>

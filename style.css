@@ -89,3 +89,6 @@ button:hover {
   backdrop-filter: blur(6px);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
+
+/* (optionnel) petite marge pour la nouvelle option 30 min */
+select option[value="1800"] { font-weight: 600; }

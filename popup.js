@@ -1,3 +1,4 @@
+/* ---------- Raccourcis DOM ---------- */
 const timeSelect = document.getElementById("refresh-timer");
 const normalBtn = document.getElementById("normal-btn");
 const advancedBtn = document.getElementById("advanced-btn");
@@ -7,134 +8,98 @@ const limitToggle = document.getElementById("limit-toggle");
 const maxRefreshSelect = document.getElementById("max-refreshes");
 
 let port = null;
-let normalCountdownInterval = null;
+let localCountdownId = null;
 let currentTabId = null;
 
-// Enable/disable max refresh selector based on checkbox
+/* ---------- UI helpers ---------- */
 limitToggle.addEventListener("change", () => {
   maxRefreshSelect.disabled = !limitToggle.checked;
 });
 
-function formatTime(seconds) {
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
+function formatTime(sec) {
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
   return `${m}:${s < 10 ? "0" : ""}${s}`;
 }
 
-function updateCountdown(seconds, count = null, max = null) {
-  let display = seconds > 0 ? `Refreshing in: ${formatTime(seconds)}` : "";
-  
-  if (max !== null && max > 1) {
-    display += ` | Count: ${count}/${max}`;
-  }
-  
-  countdownDisplay.textContent = display;
+function showCountdown(sec, count = null, max = null) {
+  let text = sec > 0 ? `Refreshing in : ${formatTime(sec)}` : "";
+  if (max !== null && max > 1) text += ` | Count : ${count}/${max}`;
+  countdownDisplay.textContent = text;
 }
 
+function startLocalCountdown(sec, count, max) {
+  clearInterval(localCountdownId);
+  let remaining = sec;
+  showCountdown(remaining, count, max);
 
-function startLocalCountdown(seconds) {
-  clearInterval(normalCountdownInterval);
-  let remaining = seconds;
-  updateCountdown(remaining);
-
-  normalCountdownInterval = setInterval(() => {
+  localCountdownId = setInterval(() => {
     remaining--;
-    if (remaining <= 0) {
-      clearInterval(normalCountdownInterval);
-      updateCountdown(0);
-    } else {
-      updateCountdown(remaining);
-    }
+    if (remaining <= 0) clearInterval(localCountdownId);
+    showCountdown(Math.max(0, remaining), count, max);
   }, 1000);
 }
 
-function connectPort(tabId) {
-  if (port) {
-    port.disconnect();
-    port = null;
-  }
-
+/* ---------- Port Logic ---------- */
+function connect(tabId) {
+  if (port) port.disconnect();
   port = chrome.runtime.connect({ name: "popup-connection" });
   currentTabId = tabId;
 
   port.onMessage.addListener((msg) => {
     if (msg.command === "countdown") {
-      updateCountdown(msg.remaining, msg.refreshCount, msg.maxRefreshes);
-    } else if (msg.command === "status") {
-      if (msg.running) {
-        startLocalCountdown(msg.remainingSeconds);
-        updateCountdown(msg.remainingSeconds, msg.refreshCount, msg.maxRefreshes);
-      } else {
-        updateCountdown(0);
-      }
+      showCountdown(msg.remaining, msg.refreshCount, msg.maxRefreshes);
+    } else if (msg.command === "status" && msg.running) {
+      startLocalCountdown(msg.remainingSeconds, msg.refreshCount, msg.maxRefreshes);
     }
   });
 
   port.postMessage({ command: "getStatus", tabId });
 }
 
-// Normal Refresh (one-time, persistent)
+/* ---------- Boutons ---------- */
+// 1) Une seule fois
 normalBtn.addEventListener("click", async () => {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (!tab) return;
 
-  currentTabId = tab.id;
-  const interval = parseInt(timeSelect.value);
-
-  clearInterval(normalCountdownInterval);
-  updateCountdown(interval);
-
-  connectPort(tab.id);
-
+  connect(tab.id);
   port.postMessage({
     command: "startOneTime",
     tabId: tab.id,
-    interval,
+    interval: parseInt(timeSelect.value)
   });
-
-  
 });
 
-// Advanced Refresh (persistent with optional limit)
+// 2) Périodique (option autostop)
 advancedBtn.addEventListener("click", async () => {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (!tab) return;
 
-  currentTabId = tab.id;
-  const interval = parseInt(timeSelect.value);
-  const useLimit = limitToggle.checked;
-  const maxRefreshes = useLimit ? parseInt(maxRefreshSelect.value) : null;
-
-  clearInterval(normalCountdownInterval);
-  connectPort(tab.id);
-
+  connect(tab.id);
   port.postMessage({
     command: "start",
     tabId: tab.id,
-    interval,
-    maxRefreshes,
+    interval: parseInt(timeSelect.value),
+    maxRefreshes: limitToggle.checked ? parseInt(maxRefreshSelect.value) : null
   });
 });
 
-// Stop any running refresh for current tab
+// 3) Stop
 stopBtn.addEventListener("dblclick", () => {
-  clearInterval(normalCountdownInterval);
   if (port && currentTabId !== null) {
     port.postMessage({ command: "stop", tabId: currentTabId });
+    showCountdown(0);
   }
-  updateCountdown(0);
+  clearInterval(localCountdownId);
 });
 
-// Connect on popup load for active tab
+/* ---------- Initialisation ---------- */
 window.addEventListener("load", async () => {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  if (tab) connectPort(tab.id);
+  if (tab) connect(tab.id);
 });
 
-// Disconnect port on unload
 window.addEventListener("unload", () => {
-  if (port) {
-    port.disconnect();
-    port = null;
-  }
+  port?.disconnect();
 });
